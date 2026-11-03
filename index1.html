@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ИТС Цитадель - Система безопасности</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            color: #333;
+        }
+
+        .map-marker {
+    transition: transform 0.2s;
+}
+.map-marker:hover {
+    transform: scale(1.1);
+}
+#fakeMap {
+    position: relative;
+    background-image: radial-gradient(circle, #c8e6c9 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+
+        .header {
+            background: #1a3e60;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            letter-spacing: 1px;
+        }
+
+        .header h1 span {
+            color: #ffaa00;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: transparent;
+            color: white;
+            border: 1px solid #4a6e8a;
+            padding: 0.5rem 1.2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: #2c5a7a;
+            border-color: #ffaa00;
+        }
+
+        .nav-btn.active {
+            background: #ffaa00;
+            color: #1a3e60;
+            border-color: #ffaa00;
+            font-weight: 600;
+        }
+
+        .main-container {
+            padding: 2rem;
+            min-height: calc(100vh - 140px);
+        }
+
+        .module {
+            display: none;
+        }
+
+        .module.active {
+            display: block;
+        }
+
+        /* Общие стили для картографической заглушки */
+        .map-placeholder {
+            background: #e9ecef;
+            border: 2px solid #1a3e60;
+            border-radius: 8px;
+            padding: 3rem;
+            text-align: center;
+            color: #495057;
+            font-size: 1.1rem;
+        }
+
+        .map-placeholder h3 {
+            color: #1a3e60;
+            margin-bottom: 1rem;
+        }
+
+        .map-filters {
+            display: flex;
+            gap: 1.5rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #1a3e60;
+        }
+
+        .btn {
+            background: #1a3e60;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #ffaa00;
+            color: #1a3e60;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            color: white;
+        }
+
+        .shelter-list {
+            margin-top: 1.5rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+            background: white;
+        }
+
+        .shelter-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .shelter-item:hover {
+            background: #f0f7ff;
+        }
+
+        .shelter-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Модуль 2: Квест */
+        .quest-container {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .scenario-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .scenario-btn {
+            background: #e9ecef;
+            border: 1px solid #ced4da;
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .scenario-btn.active {
+            background: #1a3e60;
+            color: white;
+            border-color: #1a3e60;
+        }
+
+        .quest-screen {
+            min-height: 300px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 1rem 0;
+            background: #f8f9fa;
+        }
+
+        .quest-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .quest-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .quest-option {
+            background: white;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            padding: 0.8rem 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quest-option:hover {
+            background: #e2e6ea;
+            border-color: #1a3e60;
+        }
+
+        .penalty-counter {
+            font-size: 1.1rem;
+            color: #dc3545;
+            font-weight: 600;
+            text-align: right;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Модуль 3: База знаний */
+        .knowledge-container {
+            display: flex;
+            gap: 2rem;
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+        }
+
+        .knowledge-sidebar {
+            width: 250px;
+            border-right: 1px solid #dee2e6;
+            padding-right: 1.5rem;
+        }
+
+        .knowledge-sidebar h3 {
+            color: #1a3e60;
+            margin-bottom: 1rem;
+        }
+
+        .section-list {
+            list-style: none;
+        }
+
+        .section-item {
+            padding: 0.7rem 1rem;
+            margin-bottom: 0.3rem;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #f8f9fa;
+        }
+
+        .section-item:hover, .section-item.active {
+            background: #1a3e60;
+            color: white;
+        }
+
+        .knowledge-content {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .knowledge-content h2 {
+            color: #1a3e60;
+            margin-bottom: 1rem;
+        }
+
+        .knowledge-text {
+            line-height: 1.6;
+        }
+
+        .knowledge-text h3 {
+            color: #2c5a7a;
+            margin: 1rem 0 0.5rem 0;
+        }
+
+        .test-tab {
+            margin-top: 2rem;
+            border-top: 1px solid #dee2e6;
+            padding-top: 1.5rem;
+        }
+
+        .test-selector {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .test-area {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .question {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .test-progress {
+            margin-bottom: 1rem;
+            color: #6c757d;
+        }
+
+        .result-area {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+
+        /* Модуль 4: Пульт */
+        .console {
+            background: #1a1e24;
+            color: #00ff9d;
+            padding: 2rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .console-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .console-btn {
+            background: #2c3e50;
+            color: #ecf0f1;
+            border: none;
+            padding: 1.2rem 1rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-left: 4px solid #3498db;
+            transition: 0.2s;
+        }
+
+        .console-btn:hover {
+            background: #34495e;
+            transform: scale(1.02);
+        }
+
+        .console-btn.chemical {
+            border-left-color: #e74c3c;
+        }
+
+        .console-btn.radiation {
+            border-left-color: #f1c40f;
+        }
+
+        .console-btn.air {
+            border-left-color: #9b59b6;
+        }
+
+        .alert-message {
+            background: #000;
+            border: 2px solid #ffaa00;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            font-size: 1.5rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            word-break: break-word;
+        }
+
+        .instruction {
+            background: #2c3e50;
+            color: white;
+            padding: 1.5rem;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin: 1rem 0;
+        }
+
+        .footer {
+            background: #1a3e60;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            .knowledge-container {
+                flex-direction: column;
+            }
+            .knowledge-sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #dee2e6;
+                padding-bottom: 1rem;
+                margin-bottom: 1rem;
+            }
+            .console-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>ИТС <span>ЦИТАДЕЛЬ</span></h1>
+        <div class="nav-menu" id="navMenu">
+            <button class="nav-btn active" data-module="module1">Карта убежищ</button>
+            <button class="nav-btn" data-module="module2">Симулятор</button>
+            <button class="nav-btn" data-module="module3">База знаний</button>
+            <button class="nav-btn" data-module="module4">Пульт ГО</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <!-- Модуль 1: Карта защитных сооружений (имитационная карта, без внешних API) -->
+<div id="module1" class="module active">
+    <h2>Карта защитных сооружений</h2>
+    <div class="map-filters">
+        <div class="filter-group">
+            <input type="checkbox" id="filterShelter" checked>
+            <label for="filterShelter">Убежища</label>
+        </div>
+        <div class="filter-group">
+            <input type="checkbox" id="filterPRU" checked>
+            <label for="filterPRU">ПРУ</label>
+        </div>
+        <div class="filter-group">
+            <input type="checkbox" id="filterSimple" checked>
+            <label for="filterSimple">Простейшие укрытия</label>
+        </div>
+        <button class="btn" id="findNearest">Найти ближайшие</button>
+        <button class="btn btn-secondary" id="resetFilters">Сбросить фильтры</button>
+    </div>
+    
+    <!-- Имитационная карта -->
+    <div id="fakeMap" style="background: #e8f0e8; border: 3px solid #1a3e60; border-radius: 8px; padding: 10px; position: relative; height: 400px;">
+        <div style="position: absolute; top: 5px; left: 10px; font-size: 12px; color: #666;">СЕВЕР</div>
+        <div style="position: absolute; bottom: 5px; left: 10px; font-size: 12px; color: #666;">ЮГ</div>
+        <div style="position: absolute; top: 50%; left: 5px; transform: translateY(-50%); font-size: 12px; color: #666;">ЗАПАД</div>
+        <div style="position: absolute; top: 50%; right: 5px; transform: translateY(-50%); font-size: 12px; color: #666;">ВОСТОК</div>
+        
+        <!-- Сетка для имитации карты -->
+        <svg width="100%" height="100%" style="position: absolute; top: 0; left: 0;">
+            <!-- Линии сетки -->
+            <line x1="0" y1="20%" x2="100%" y2="20%" stroke="#ccc" stroke-width="1" stroke-dasharray="5,5"/>
+            <line x1="0" y1="40%" x2="100%" y2="40%" stroke="#ccc" stroke-width="1" stroke-dasharray="5,5"/>
+            <line x1="0" y1="60%" x2="100%" y2="60%" stroke="#ccc" stroke-width="1" stroke-dasharray="5,5"/>
+            <line x1="0" y1="80%" x2="100%" y2="80%" stroke="#ccc" stroke-width="1" stroke-dasharray="5,5"/>
+            <line x1="20%" y1="0" x2="20%" y2="100%" stroke="#ccc" stroke-width="1" stroke-dasharray="5,5"/>
+            <line x1="40%" y1="0" x2="40%" y2="100%" stroke="#ccc" stroke-width="1" stroke-dasharray="5,5"/>
+            <line x1="60%" y1="0" x2="60%" y2="100%" stroke="#ccc" stroke-width="1" stroke-dasharray="5,5"/>
+            <line x1="80%" y1="0" x2="80%" y2="100%" stroke="#ccc" stroke-width="1" stroke-dasharray="5,5"/>
+        </svg>
+        
+        <!-- Метки объектов -->
+        <div id="mapMarkers">
+            <div class="map-marker shelter-marker" data-type="shelter" data-name="Убежище №1" data-address="ул. Ленина, 10" data-capacity="300" data-fvu="есть" style="position: absolute; left: 25%; top: 35%; cursor: pointer; text-align: center;">
+                <div style="background: #dc3545; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5); margin: 0 auto;"></div>
+                <div style="font-size: 10px; background: white; padding: 2px 4px; border-radius: 4px; margin-top: 2px; white-space: nowrap;">Убежище №1</div>
+            </div>
+            <div class="map-marker pru-marker" data-type="pru" data-name="ПРУ №5" data-address="пр. Мира, 25" data-capacity="150" data-fvu="нет" style="position: absolute; left: 55%; top: 25%; cursor: pointer; text-align: center;">
+                <div style="background: #ffc107; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5); margin: 0 auto;"></div>
+                <div style="font-size: 10px; background: white; padding: 2px 4px; border-radius: 4px; margin-top: 2px; white-space: nowrap;">ПРУ №5</div>
+            </div>
+            <div class="map-marker simple-marker" data-type="simple" data-name="Укрытие №3" data-address="ул. Лесная, 7" data-capacity="50" data-fvu="нет" style="position: absolute; left: 70%; top: 65%; cursor: pointer; text-align: center;">
+                <div style="background: #28a745; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5); margin: 0 auto;"></div>
+                <div style="font-size: 10px; background: white; padding: 2px 4px; border-radius: 4px; margin-top: 2px; white-space: nowrap;">Укрытие №3</div>
+            </div>
+            <div class="map-marker shelter-marker" data-type="shelter" data-name="Убежище №2" data-address="пл. Победы, 1" data-capacity="500" data-fvu="есть" style="position: absolute; left: 40%; top: 75%; cursor: pointer; text-align: center;">
+                <div style="background: #dc3545; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5); margin: 0 auto;"></div>
+                <div style="font-size: 10px; background: white; padding: 2px 4px; border-radius: 4px; margin-top: 2px; white-space: nowrap;">Убежище №2</div>
+            </div>
+            <div class="map-marker pru-marker" data-type="pru" data-name="ПРУ №2" data-address="ул. Садовая, 15" data-capacity="200" data-fvu="нет" style="position: absolute; left: 15%; top: 60%; cursor: pointer; text-align: center;">
+                <div style="background: #ffc107; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5); margin: 0 auto;"></div>
+                <div style="font-size: 10px; background: white; padding: 2px 4px; border-radius: 4px; margin-top: 2px; white-space: nowrap;">ПРУ №2</div>
+            </div>
+        </div>
+        
+        <!-- Условное обозначение -->
+        <div style="position: absolute; bottom: 10px; right: 10px; background: white; padding: 8px; border-radius: 4px; font-size: 11px; border: 1px solid #ccc;">
+            <div><span style="display: inline-block; width: 10px; height: 10px; background: #dc3545; border-radius: 50%; margin-right: 5px;"></span> Убежища</div>
+            <div><span style="display: inline-block; width: 10px; height: 10px; background: #ffc107; border-radius: 50%; margin-right: 5px;"></span> ПРУ</div>
+            <div><span style="display: inline-block; width: 10px; height: 10px; background: #28a745; border-radius: 50%; margin-right: 5px;"></span> Простейшие укрытия</div>
+        </div>
+    </div>
+    
+    <div class="shelter-list" id="shelterList">
+        <div class="shelter-item" data-name="Убежище №1" data-address="ул. Ленина, 10" data-capacity="300" data-fvu="есть">🏢 Убежище №1 - ул. Ленина, 10 (300 мест, ФВУ есть)</div>
+        <div class="shelter-item" data-name="ПРУ №5" data-address="пр. Мира, 25" data-capacity="150" data-fvu="нет">🏠 ПРУ №5 - пр. Мира, 25 (150 мест, ФВУ нет)</div>
+        <div class="shelter-item" data-name="Укрытие №3" data-address="ул. Лесная, 7" data-capacity="50" data-fvu="нет">⛺ Укрытие №3 - ул. Лесная, 7 (50 мест, ремонт)</div>
+        <div class="shelter-item" data-name="Убежище №2" data-address="пл. Победы, 1" data-capacity="500" data-fvu="есть">🏢 Убежище №2 - пл. Победы, 1 (500 мест, ФВУ есть)</div>
+        <div class="shelter-item" data-name="ПРУ №2" data-address="ул. Садовая, 15" data-capacity="200" data-fvu="нет">🏠 ПРУ №2 - ул. Садовая, 15 (200 мест, ФВУ нет)</div>
+    </div>
+</div>
+
+
+        <!-- Модуль 2: Симулятор действий (квест) -->
+        <div id="module2" class="module">
+            <h2>Симулятор действий в ЧС</h2>
+            <div class="quest-container">
+                <div class="scenario-selector" id="scenarioSelector">
+                    <button class="scenario-btn active" data-scenario="shelter">Убежище</button>
+                    <button class="scenario-btn" data-scenario="sanitary">Санобработка</button>
+                    <button class="scenario-btn" data-scenario="evacuation">Эвакуация</button>
+                </div>
+                <div class="penalty-counter" id="penaltyDisplay">Штрафные баллы: 0</div>
+                <div class="quest-screen" id="questScreen">
+                    <div class="quest-text" id="questText">Выберите сценарий для начала тренировки.</div>
+                    <div class="quest-options" id="questOptions"></div>
+                </div>
+                <button class="btn" id="restartQuest">Начать заново</button>
+                <button class="btn btn-secondary" id="backToMenu">К выбору сценария</button>
+            </div>
+        </div>
+
+        <!-- Модуль 3: База знаний и тестирование -->
+        <div id="module3" class="module">
+            <div class="knowledge-container">
+                <div class="knowledge-sidebar">
+                    <h3>Разделы</h3>
+                    <ul class="section-list" id="sectionList">
+                        <li class="section-item active" data-section="1">Защитные сооружения</li>
+                        <li class="section-item" data-section="2">Санитарная обработка</li>
+                        <li class="section-item" data-section="3">Эвакуация</li>
+                        <li class="section-item" data-section="4">Оповещение и сигналы ГО</li>
+                    </ul>
+                </div>
+                <div class="knowledge-content">
+                    <div id="knowledgeDisplay">
+                        <h2>Защитные сооружения</h2>
+                        <div class="knowledge-text">
+                            <h3>Убежища</h3>
+                            <p>Герметичные сооружения, защищающие от всех поражающих факторов: ударной волны, проникающей радиации, отравляющих веществ, бактериальных средств. Оборудуются фильтровентиляционными системами (ФВУ).</p>
+                            <p><strong>Внутреннее устройство:</strong> основные отсеки для укрываемых, санитарные узлы, медицинский пункт, помещение для ФВУ, аварийный запас воды и продуктов.</p>
+                            
+                            <h3>Противорадиационные укрытия (ПРУ)</h3>
+                            <p>Защищают от радиоактивного заражения и светового излучения. Обустраиваются в подвалах, подпольях, цокольных этажах зданий.</p>
+                            
+                            <h3>Простейшие укрытия</h3>
+                            <p>Щели открытого и перекрытого типа, траншеи. Обеспечивают защиту от ударной волны и частично от радиации.</p>
+                            
+                            <h3>Правила поведения в убежище</h3>
+                            <p>Организованное заполнение по спискам, соблюдение тишины и порядка, выполнение распоряжений дежурного, оказание помощи пострадавшим.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="test-tab">
+                        <h3>Проверка знаний</h3>
+                        <div class="test-selector">
+                            <select id="testSection" class="btn-secondary" style="padding: 0.5rem;">
+                                <option value="0">Все разделы</option>
+                                <option value="1">Защитные сооружения</option>
+                                <option value="2">Санитарная обработка</option>
+                                <option value="3">Эвакуация</option>
+                                <option value="4">Оповещение</option>
+                            </select>
+                            <button class="btn" id="startTest">Начать тест</button>
+                            <button class="btn btn-secondary" id="showHistory">История</button>
+                        </div>
+                        <div class="test-area" id="testArea">
+                            <p>Нажмите "Начать тест" для прохождения. Вопросы составлены по материалам разделов.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модуль 4: Пульт оповещения -->
+        <div id="module4" class="module">
+            <h2 style="text-align: center; margin-bottom: 2rem;">Пульт оперативного дежурного</h2>
+            <div class="console">
+                <div class="console-buttons">
+                    <button class="console-btn chemical" id="alertChemical">ХИМИЧЕСКАЯ ТРЕВОГА</button>
+                    <button class="console-btn radiation" id="alertRadiation">РАДИАЦИОННАЯ ОПАСНОСТЬ</button>
+                    <button class="console-btn air" id="alertAir">УГРОЗА ВОЗДУШНОГО НАПАДЕНИЯ</button>
+                </div>
+                <div class="alert-message" id="alertDisplay">СИСТЕМА ОЖИДАНИЯ</div>
+                <div class="instruction" id="instructionDisplay">Нажмите кнопку тревоги для получения инструкции</div>
+                <button class="btn" id="resetConsole" style="width: 100%; margin-top: 1rem;">Сброс</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        ИТС Цитадель - Информационно-тренировочная система по безопасности. Разработано в рамках проектной работы.
+    </div>
+
+    <script>
+        // ================== НАВИГАЦИЯ МЕЖДУ МОДУЛЯМИ ==================
+        const navButtons = document.querySelectorAll('.nav-btn');
+        const modules = document.querySelectorAll('.module');
+
+        navButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetModule = btn.dataset.module;
+                navButtons.forEach(b => b.classList.remove('active'));
+                modules.forEach(m => m.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(targetModule).classList.add('active');
+            });
+        });
+
+        // ================== МОДУЛЬ 1: ФИЛЬТРАЦИЯ МЕТОК НА ИМИТАЦИОННОЙ КАРТЕ ==================
+function updateMapVisibility() {
+    const showShelter = document.getElementById('filterShelter').checked;
+    const showPRU = document.getElementById('filterPRU').checked;
+    const showSimple = document.getElementById('filterSimple').checked;
+    
+    document.querySelectorAll('.map-marker').forEach(marker => {
+        const type = marker.dataset.type;
+        if (type === 'shelter' && showShelter) marker.style.display = 'block';
+        else if (type === 'pru' && showPRU) marker.style.display = 'block';
+        else if (type === 'simple' && showSimple) marker.style.display = 'block';
+        else marker.style.display = 'none';
+    });
+}
+
+// Фильтры
+document.getElementById('filterShelter').addEventListener('change', updateMapVisibility);
+document.getElementById('filterPRU').addEventListener('change', updateMapVisibility);
+document.getElementById('filterSimple').addEventListener('change', updateMapVisibility);
+document.getElementById('resetFilters').addEventListener('click', () => {
+    document.getElementById('filterShelter').checked = true;
+    document.getElementById('filterPRU').checked = true;
+    document.getElementById('filterSimple').checked = true;
+    updateMapVisibility();
+});
+
+// Клик по меткам на карте
+document.querySelectorAll('.map-marker').forEach(marker => {
+    marker.addEventListener('click', () => {
+        const name = marker.dataset.name;
+        const address = marker.dataset.address;
+        const capacity = marker.dataset.capacity;
+        const fvu = marker.dataset.fvu;
+        alert(`Объект: ${name}\nАдрес: ${address}\nВместимость: ${capacity} чел.\nФВУ: ${fvu}\nМаршрут: рекомендуется двигаться пешком, избегая открытых участков.`);
+    });
+});
+
+// Кнопка "Найти ближайшие" (определяет "текущее местоположение" условно)
+document.getElementById('findNearest').addEventListener('click', () => {
+    // Имитация геолокации
+    alert('Функция определения ближайших убежищ.\n\nВаше местоположение (условное): центр города\n\nБлижайшие объекты:\n- Убежище №1 (300 м)\n- ПРУ №5 (450 м)\n- Убежище №2 (600 м)');
+});
+
+// Клик по списку убежищ (оставляем как было)
+document.querySelectorAll('.shelter-item').forEach(item => {
+    item.addEventListener('click', () => {
+        const name = item.dataset.name;
+        const address = item.dataset.address;
+        const capacity = item.dataset.capacity;
+        const fvu = item.dataset.fvu;
+        alert(`Объект: ${name}\nАдрес: ${address}\nВместимость: ${capacity} чел.\nФВУ: ${fvu}\nМаршрут: рекомендуется двигаться пешком, избегая открытых участков.`);
+    });
+});
+
+// Инициализация отображения всех меток
+updateMapVisibility();
+
+
+        // ================== МОДУЛЬ 2: КВЕСТ ==================
+        const scenarios = {
+            shelter: {
+                name: 'Убежище',
+                steps: [
+                    { id: 1, text: 'Вы получили сигнал "Внимание всем!" и сообщение о необходимости проследовать в убежище. Вы подходите к двери, где собирается толпа. Ваши действия?', options: [
+                        { text: 'Пытаюсь пройти без очереди', next: 2, penalty: 1 },
+                        { text: 'Жду своей очереди, соблюдая порядок', next: 3, penalty: 0 },
+                        { text: 'Останавливаюсь у входа, чтобы позвонить', next: 4, penalty: 1 }
+                    ]},
+                    { id: 2, text: 'Вы создали давку. Дежурный сделал замечание. Вы потратили время.', options: [{ text: 'Продолжить', next: 5, penalty: 0 }] },
+                    { id: 3, text: 'Вы спокойно зашли в убежище и нашли свое место.', options: [{ text: 'Продолжить', next: 5, penalty: 0 }] },
+                    { id: 4, text: 'Вы задержались. Пришлось зайти в переполненное убежище.', options: [{ text: 'Продолжить', next: 5, penalty: 1 }] },
+                    { id: 5, text: 'Вы внутри. Слышен шум вентиляции. Рядом пожилой человек жалуется на плохое самочувствие. Ваши действия?', options: [
+                        { text: 'Сообщить дежурному', next: 6, penalty: 0 },
+                        { text: 'Ничего не делать', next: 7, penalty: 1 },
+                        { text: 'Попытаться самому разобраться с вентиляцией', next: 8, penalty: 2 }
+                    ]},
+                    { id: 6, text: 'Вы сообщили дежурному. Он вызвал помощь. Вы действовали правильно.', options: [{ text: 'Завершить', next: 'end', penalty: 0 }] },
+                    { id: 7, text: 'Шум усилился, стало душно. Пожилому человеку стало хуже.', options: [{ text: 'Завершить', next: 'end', penalty: 0 }] },
+                    { id: 8, text: 'Вы только ухудшили работу вентиляции. Вам сделали замечание.', options: [{ text: 'Завершить', next: 'end', penalty: 0 }] }
+                ]
+            },
+            sanitary: {
+                name: 'Санобработка',
+                steps: [
+                    { id: 1, text: 'Вы вышли из зоны химического заражения. Необходимо провести санитарную обработку. Ваши действия?', options: [
+                        { text: 'Снять верхнюю одежду', next: 2, penalty: 0 },
+                        { text: 'Обработать открытые участки из ИПП (индивидуальный противохимический пакет)', next: 2, penalty: 0 },
+                        { text: 'Пойти домой и помыться', next: 3, penalty: 2 }
+                    ]},
+                    { id: 2, text: 'Вы правильно начали обработку. Теперь нужно пройти в помывочную для полной санитарной обработки.', options: [{ text: 'Завершить', next: 'end', penalty: 0 }] },
+                    { id: 3, text: 'Нельзя идти домой с зараженной одеждой. Это опасно для вас и окружающих.', options: [{ text: 'Завершить', next: 'end', penalty: 0 }] }
+                ]
+            },
+            evacuation: {
+                name: 'Эвакуация',
+                steps: [
+                    { id: 1, text: 'Объявлена эвакуация. У вас есть 15 минут. Что делаете в первую очередь?', options: [
+                        { text: 'Собираю документы и необходимые вещи', next: 2, penalty: 0 },
+                        { text: 'Сразу выбегаю на улицу', next: 3, penalty: 1 },
+                        { text: 'Звоню родственникам', next: 4, penalty: 1 }
+                    ]},
+                    { id: 2, text: 'Вы собрали документы. Теперь нужно отключить газ и электричество.', options: [
+                        { text: 'Отключаю и выхожу на СЭП', next: 'end', penalty: 0 },
+                        { text: 'Забываю отключить', next: 5, penalty: 1 }
+                    ]},
+                    { id: 3, text: 'Вы выбежали без документов. Придется возвращаться.', options: [{ text: 'Завершить', next: 'end', penalty: 0 }] },
+                    { id: 4, text: 'Связь не работает, время упущено.', options: [{ text: 'Завершить', next: 'end', penalty: 0 }] },
+                    { id: 5, text: 'Вы не отключили газ. Это может привести к пожару.', options: [{ text: 'Завершить', next: 'end', penalty: 0 }] }
+                ]
+            }
+        };
+
+        let currentScenario = null;
+        let currentStep = null;
+        let penaltyScore = 0;
+        let currentScenarioName = 'shelter';
+
+        const questText = document.getElementById('questText');
+        const questOptions = document.getElementById('questOptions');
+        const penaltyDisplay = document.getElementById('penaltyDisplay');
+        const scenarioButtons = document.querySelectorAll('.scenario-btn');
+
+        function loadScenario(scenarioKey) {
+            currentScenario = scenarios[scenarioKey];
+            currentScenarioName = scenarioKey;
+            penaltyScore = 0;
+            updatePenaltyDisplay();
+            const firstStep = currentScenario.steps.find(s => s.id === 1);
+            displayStep(firstStep);
+            
+            scenarioButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if(btn.dataset.scenario === scenarioKey) btn.classList.add('active');
+            });
+        }
+
+        function displayStep(step) {
+            if (!step) return;
+            currentStep = step;
+            questText.textContent = step.text;
+            let html = '';
+            step.options.forEach(opt => {
+                html += `<div class="quest-option" data-next="${opt.next}" data-penalty="${opt.penalty}">${opt.text}</div>`;
+            });
+            questOptions.innerHTML = html;
+            
+            document.querySelectorAll('.quest-option').forEach(opt => {
+                opt.addEventListener('click', () => {
+                    const next = opt.dataset.next;
+                    const penalty = parseInt(opt.dataset.penalty);
+                    penaltyScore += penalty;
+                    updatePenaltyDisplay();
+                    if (next === 'end') showResult();
+                    else {
+                        const nextStep = currentScenario.steps.find(s => s.id == next);
+                        displayStep(nextStep);
+                    }
+                });
+            });
+        }
+
+        function updatePenaltyDisplay() {
+            penaltyDisplay.textContent = `Штрафные баллы: ${penaltyScore}`;
+        }
+
+        function showResult() {
+            let resultText = 'Сценарий завершен. ';
+            if (penaltyScore === 0) resultText += 'Отлично! Вы действовали правильно.';
+            else if (penaltyScore <= 2) resultText += 'Хорошо, но есть ошибки. Повторите теорию.';
+            else resultText += 'Рекомендуем изучить материал заново.';
+            questText.textContent = resultText;
+            questOptions.innerHTML = '';
+        }
+
+        scenarioButtons.forEach(btn => {
+            btn.addEventListener('click', () => loadScenario(btn.dataset.scenario));
+        });
+        document.getElementById('restartQuest').addEventListener('click', () => loadScenario(currentScenarioName));
+        document.getElementById('backToMenu').addEventListener('click', () => {
+            questText.textContent = 'Выберите сценарий для начала тренировки.';
+            questOptions.innerHTML = '';
+            penaltyScore = 0;
+            updatePenaltyDisplay();
+        });
+        loadScenario('shelter');
+
+        // ================== МОДУЛЬ 3: ТЕСТИРОВАНИЕ ==================
+        const questions = [
+            { id: 1, section: 1, question: 'Какой тип защитного сооружения обеспечивает защиту от всех поражающих факторов ядерного взрыва?', options: ['Противорадиационное укрытие', 'Убежище с фильтровентиляционной установкой', 'Открытая щель', 'Подвал жилого дома'], correct: [1], multiple: false },
+            { id: 2, section: 1, question: 'Что входит в обязательное оснащение убежища?', options: ['Фильтровентиляционная установка', 'Аварийный запас воды', 'Санитарный узел', 'Спортивный зал'], correct: [0, 1, 2], multiple: true },
+            { id: 3, section: 2, question: 'Где проводится полная санитарная обработка?', options: ['Непосредственно в зоне заражения', 'На специальных пунктах санитарной обработки вне зоны заражения', 'В любом жилом доме', 'В убежище'], correct: [1], multiple: false },
+            { id: 4, section: 2, question: 'Что используется для частичной санитарной обработки?', options: ['Индивидуальный противохимический пакет', 'Мыло и вода', 'Подручные средства (ткань, вода)', 'Специальная камера для дезинфекции'], correct: [0, 2], multiple: true },
+            { id: 5, section: 3, question: 'Что такое СЭП?', options: ['Санитарно-эвакуационный пункт', 'Сборный эвакуационный пункт', 'Спасательный экстренный пост', 'Склад эвакуационного питания'], correct: [1], multiple: false },
+            { id: 6, section: 3, question: 'Что необходимо сделать в первую очередь при получении сигнала об эвакуации?', options: ['Собрать документы и необходимые вещи', 'Отключить газ, электричество, воду', 'Немедленно выбежать на улицу', 'Позвонить родственникам'], correct: [0, 1], multiple: true },
+            { id: 7, section: 4, question: 'Какой сигнал означает включение сирен и прерывистые гудки предприятий?', options: ['Воздушная тревога', 'Внимание всем!', 'Радиационная опасность', 'Химическая тревога'], correct: [1], multiple: false },
+            { id: 8, section: 4, question: 'Что нужно сделать, услышав сигнал "Внимание всем!"?', options: ['Немедленно бежать в убежище', 'Включить радио или телевизор для прослушивания информации', 'Продолжать заниматься своими делами', 'Позвонить по телефону 112'], correct: [1], multiple: false }
+        ];
+
+        let currentTest = [];
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function arraysEqual(a, b) {
+            if (a.length !== b.length) return false;
+            for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+            return true;
+        }
+
+        function saveTestResult(section, correct, total, percent) {
+            let history = JSON.parse(localStorage.getItem('testHistory')) || [];
+            history.push({ date: new Date().toLocaleString(), section: section, correct: correct, total: total, percent: percent });
+            localStorage.setItem('testHistory', JSON.stringify(history));
+        }
+
+        function displayQuestion() {
+            if (currentQuestionIndex >= currentTest.length) {
+                showTestResults();
+                return;
+            }
+            const q = currentTest[currentQuestionIndex];
+            let html = `<div class="test-progress">Вопрос ${currentQuestionIndex + 1} из ${currentTest.length}</div>`;
+            html += `<div class="question">${q.question}</div><div class="options" id="testOptions">`;
+            q.options.forEach((opt, idx) => {
+                const type = q.multiple ? 'checkbox' : 'radio';
+                html += `<div class="option"><input type="${type}" name="q_${q.id}" value="${idx}" id="opt_${idx}"> <label for="opt_${idx}">${opt}</label></div>`;
+            });
+            html += `</div><button class="btn" id="submitAnswer">Ответить</button>`;
+            if (!q.multiple) html += `<button class="btn btn-secondary" id="skipQuestion">Пропустить</button>`;
+            document.getElementById('testArea').innerHTML = html;
+            document.getElementById('submitAnswer')?.addEventListener('click', submitAnswer);
+            document.getElementById('skipQuestion')?.addEventListener('click', () => {
+                userAnswers.push({ id: q.id, selected: [], correct: q.correct });
+                currentQuestionIndex++;
+                displayQuestion();
+            });
+        }
+
+        function submitAnswer() {
+            const q = currentTest[currentQuestionIndex];
+            const selected = [];
+            document.querySelectorAll('#testOptions input:checked').forEach(opt => selected.push(parseInt(opt.value)));
+            if (!q.multiple && selected.length === 0) { alert('Выберите ответ'); return; }
+            userAnswers.push({ id: q.id, selected: selected, correct: q.correct });
+            currentQuestionIndex++;
+            displayQuestion();
+        }
+
+        function showTestResults() {
+            let correct = 0;
+            let resultHtml = '<div class="result-area"><h4>Результаты теста:</h4>';
+            userAnswers.forEach((ans, idx) => {
+                const q = currentTest.find(q => q.id === ans.id);
+                const isCorrect = arraysEqual([...ans.selected].sort(), [...ans.correct].sort());
+                if (isCorrect) correct++;
+                resultHtml += `<p><strong>${idx+1}. ${q.question}</strong><br>`;
+                resultHtml += `Ваш ответ: ${ans.selected.map(s => q.options[s]).join(', ') || 'нет ответа'}<br>`;
+                resultHtml += `Правильный ответ: ${ans.correct.map(c => q.options[c]).join(', ')}<br>Результат: ${isCorrect ? '✓ Правильно' : '✗ Неправильно'}</p>`;
+            });
+            const percent = Math.round((correct / currentTest.length) * 100);
+            resultHtml += `<p><strong>Правильных ответов: ${correct} из ${currentTest.length} (${percent}%)</strong></p>`;
+            let grade = percent >= 90 ? '5 (отлично)' : percent >= 70 ? '4 (хорошо)' : percent >= 50 ? '3 (удовлетворительно)' : '2 (неудовлетворительно)';
+            resultHtml += `<p><strong>Оценка: ${grade}</strong></p></div>`;
+            resultHtml += '<button class="btn" id="restartTest">Пройти заново</button>';
+            document.getElementById('testArea').innerHTML = resultHtml;
+            document.getElementById('restartTest')?.addEventListener('click', () => document.getElementById('startTest').click());
+            saveTestResult(parseInt(document.getElementById('testSection').value), correct, currentTest.length, percent);
+        }
+
+        document.getElementById('startTest').addEventListener('click', () => {
+            const section = parseInt(document.getElementById('testSection').value);
+            if (section === 0) currentTest = shuffleArray([...questions]);
+            else currentTest = shuffleArray(questions.filter(q => q.section === section));
+            if (currentTest.length === 0) { document.getElementById('testArea').innerHTML = '<p>Нет вопросов для этого раздела.</p>'; return; }
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            displayQuestion();
+        });
+
+        document.getElementById('showHistory').addEventListener('click', () => {
+            let history = JSON.parse(localStorage.getItem('testHistory')) || [];
+            if (history.length === 0) { document.getElementById('testArea').innerHTML = '<p>История тестирований пуста.</p>'; return; }
+            let html = '<div class="result-area"><h4>История тестирований:</h4>';
+            history.slice(-10).reverse().forEach(h => {
+                const sectionName = ['Все', 'Защитные сооружения', 'Санобработка', 'Эвакуация', 'Оповещение'][h.section];
+                html += `<p>${h.date} | Раздел: ${sectionName} | Результат: ${h.correct}/${h.total} (${h.percent}%)</p>`;
+            });
+            html += '</div>';
+            document.getElementById('testArea').innerHTML = html;
+        });
+
+        // ================== МОДУЛЬ 4: ПУЛЬТ ОПОВЕЩЕНИЯ ==================
+        const alertsData = {
+            chemical: { name: 'ХИМИЧЕСКАЯ ТРЕВОГА', instruction: 'Надеть противогазы! Загерметизировать помещения! Включить радио для прослушивания информации! Проверить герметизацию окон и дверей!' },
+            radiation: { name: 'РАДИАЦИОННАЯ ОПАСНОСТЬ', instruction: 'Укрыться в защитных сооружениях! Принять йодную профилактику! Загерметизировать помещения! Использовать средства защиты органов дыхания!' },
+            air: { name: 'УГРОЗА ВОЗДУШНОГО НАПАДЕНИЯ', instruction: 'Немедленно проследовать в убежище! Взять документы и средства защиты! Сохранять спокойствие! Выполнять указания дежурных!' }
+        };
+
+        document.getElementById('alertChemical').addEventListener('click', () => {
+            document.getElementById('alertDisplay').textContent = alertsData.chemical.name;
+            document.getElementById('instructionDisplay').textContent = alertsData.chemical.instruction;
+            alert('🔔 ЗВУКОВОЙ СИГНАЛ: ВНИМАНИЕ! ХИМИЧЕСКАЯ ТРЕВОГА!');
+        });
+        document.getElementById('alertRadiation').addEventListener('click', () => {
+            document.getElementById('alertDisplay').textContent = alertsData.radiation.name;
+            document.getElementById('instructionDisplay').textContent = alertsData.radiation.instruction;
+            alert('🔔 ЗВУКОВОЙ СИГНАЛ: ВНИМАНИЕ! РАДИАЦИОННАЯ ОПАСНОСТЬ!');
+        });
+        document.getElementById('alertAir').addEventListener('click', () => {
+            document.getElementById('alertDisplay').textContent = alertsData.air.name;
+            document.getElementById('instructionDisplay').textContent = alertsData.air.instruction;
+            alert('🔔 ЗВУКОВОЙ СИГНАЛ: ВНИМАНИЕ! УГРОЗА ВОЗДУШНОГО НАПАДЕНИЯ!');
+        });
+        document.getElementById('resetConsole').addEventListener('click', () => {
+            document.getElementById('alertDisplay').textContent = 'СИСТЕМА ОЖИДАНИЯ';
+            document.getElementById('instructionDisplay').textContent = 'Нажмите кнопку тревоги для получения инструкции';
+        });
+
+        // ================== БАЗА ЗНАНИЙ: НАВИГАЦИЯ ПО РАЗДЕЛАМ ==================
+        const knowledgeContent = {
+            1: { title: 'Защитные сооружения', html: '<h3>Убежища</h3><p>Герметичные сооружения, защищающие от всех поражающих факторов: ударной волны, проникающей радиации, отравляющих веществ, бактериальных средств. Оборудуются фильтровентиляционными системами (ФВУ).</p><h3>Противорадиационные укрытия (ПРУ)</h3><p>Защищают от радиоактивного заражения и светового излучения. Обустраиваются в подвалах, подпольях, цокольных этажах.</p><h3>Простейшие укрытия</h3><p>Щели открытого и перекрытого типа, траншеи. Обеспечивают защиту от ударной волны и частично от радиации.</p><h3>Правила поведения</h3><p>Организованное заполнение по спискам, соблюдение тишины и порядка, выполнение распоряжений дежурного, оказание помощи пострадавшим.</p>' },
+            2: { title: 'Санитарная обработка', html: '<h3>Частичная санитарная обработка</h3><p>Проводится непосредственно в зоне заражения. Удаление отравляющих веществ или радиоактивной пыли с открытых участков кожи, одежды, обуви с использованием индивидуальных противохимических пакетов (ИПП) или подручных средств.</p><h3>Полная санитарная обработка</h3><p>Проводится вне зоны заражения на специальных пунктах. Включает мытье всего тела со сменой белья и дезинфекцию одежды.</p><h3>Индивидуальный противохимический пакет (ИПП)</h3><p>Предназначен для обеззараживания капельно-жидких отравляющих веществ на открытых участках кожи и прилегающей одежде.</p>' },
+            3: { title: 'Эвакуация', html: '<h3>Порядок действий при эвакуации</h3><p>1. Получение сигнала об эвакуации.<br>2. Подготовка документов, денег, продуктов, воды, необходимых вещей.<br>3. Отключение электроэнергии, газа, воды в квартире.<br>4. Следование на сборный эвакуационный пункт (СЭП) для регистрации.<br>5. Отправка в безопасный район.</p><h3>Сборный эвакуационный пункт (СЭП)</h3><p>Место, где происходит регистрация эвакуируемых и формирование колонн для отправки.</p><h3>Что брать с собой</h3><p>Документы, средства индивидуальной защиты, запас воды и продуктов на 3 дня, предметы первой необходимости, теплые вещи.</p>' },
+            4: { title: 'Оповещение и сигналы ГО', html: '<h3>Сигнал "Внимание всем!"</h3><p>Подается сиренами, гудками предприятий, транспорта. При его звучании необходимо включить радио или телевизор для прослушивания экстренного сообщения.</p><h3>Химическая тревога</h3><p>Подается при угрозе или возникновении химического заражения. Действия: надеть противогаз, загерметизировать помещение.</p><h3>Радиационная опасность</h3><p>Подается при угрозе радиоактивного заражения. Действия: укрыться в защитном сооружении, принять йодную профилактику.</p><h3>Угроза воздушного нападения</h3><p>Подается при непосредственной угрозе удара с воздуха. Действия: немедленно проследовать в убежище.</p>' }
+        };
+
+        document.querySelectorAll('.section-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.section-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                const section = item.dataset.section;
+                const content = knowledgeContent[section];
+                document.getElementById('knowledgeDisplay').innerHTML = `<h2>${content.title}</h2><div class="knowledge-text">${content.html}</div>`;
+            });
+        });
+    </script>
+</body>
+</html>
